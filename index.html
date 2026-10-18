@@ -108,7 +108,7 @@ main{max-width:1000px;margin:0 auto;padding:18px}
 <section id="game" class="page active">
   <div class="stats">
     <div class="stat"><div class="stat-label">TIME</div><div class="stat-value" id="timer">00:00</div></div>
-    <div class="stat"><div class="stat-label">AVERAGE TIME</div><div class="stat-value" id="average">00:25</div></div>
+    <div class="stat"><div class="stat-label">AVERAGE TIME</div><div class="stat-value" id="average">01:00</div></div>
     <div class="stat"><div class="stat-label">STREAK 🔥</div><div class="stat-value" id="homeStreak">0 <small>days</small></div></div>
   </div>
   <div class="stat" style="margin-bottom:15px">
@@ -262,7 +262,6 @@ let data=loadData();
 function saveData(){
   data.completedDates=[...new Set(data.completedDates)].sort();
   try{localStorage.setItem(STORE_KEY,JSON.stringify(data))}catch{}
-  // Compact backup cookie; localStorage is the primary storage.
   const backup={
     completedDates:data.completedDates.slice(-100),
     records:Object.fromEntries(Object.entries(data.records).slice(-20)),
@@ -289,7 +288,6 @@ function refreshStats(){
   $("calendarStreak").textContent=`${effectiveStreak()} day streak`;
 }
 
-// Deterministic seeded random generator. The same date produces the same puzzle.
 function makePuzzle(dateKey){
   let seed=2166136261;
   for(const ch of dateKey){seed^=ch.charCodeAt(0);seed=Math.imul(seed,16777619)}
@@ -310,7 +308,6 @@ function makePuzzle(dateKey){
   }
 
   let route=null;
-  // Randomized backtracking searches for a Hamiltonian path through every cell.
   for(let attempt=0;attempt<22&&!route;attempt++){
     const start=Math.floor(random()*TOTAL);
     const visited=new Uint8Array(TOTAL);
@@ -345,7 +342,6 @@ function makePuzzle(dateKey){
     if(search(start))route=candidate.slice();
   }
 
-  // Guaranteed valid fallback.
   if(!route){
     route=[];
     const vertical=random()<0.5,flipX=random()<0.5,flipY=random()<0.5;
@@ -369,7 +365,6 @@ function makePuzzle(dateKey){
   const routeEdges=new Set();
   for(let i=1;i<route.length;i++)routeEdges.add(edgeKey(route[i-1],route[i]));
 
-  // Only some non-solution edges are blocked, so walls don't draw the whole answer.
   const blockedEdges=new Set();
   for(let cell=0;cell<TOTAL;cell++){
     for(const neighbor of neighbors(cell)){
@@ -385,7 +380,7 @@ function makePuzzle(dateKey){
   const puzzleIndex=((dayIndex%30)+30)%30;
 
   return {dateKey,puzzleIndex,route,checkpoints,routeEdges,blockedEdges,
-    average:25+((puzzleIndex*7)%11)};
+    average:60};
 }
 
 let activeDate=todayKey();
@@ -522,8 +517,6 @@ function restartPuzzle(){
   renderBoard();
 }
 
-// Star rating: 3 stars for a fast, efficient run, 2 for a solid run,
-// and 1 for completing the puzzle. Every completed run earns at least 1.
 function calculateStars(seconds,undoCount){
   if(seconds<=puzzle.average&&undoCount<=2)return 3;
   if(seconds<=puzzle.average*1.5&&undoCount<=6)return 2;
@@ -548,7 +541,6 @@ function completePuzzle(){
     data.lastDailyDate=todayKey();
   }
 
-  // Keep the best result for that date. Stars are saved with the result.
   if(isDaily){
     const previous=data.records[activeDate];
     const result={time,undos,stars,completedAt:new Date().toISOString()};
@@ -683,7 +675,6 @@ function renderCalendar(){
     const num=document.createElement("span");num.className="day-number";num.textContent=day;button.appendChild(num);
     if(done.has(key)){
       const check=document.createElement("span");check.className="day-check";check.textContent="✓";button.appendChild(check);
-      // Mark completed dates within the current streak window with a flame.
       const gap=data.lastDailyDate?dayDifference(key,data.lastDailyDate):999;
       if(gap>=0&&gap<=Math.max(0,data.streak-1)){
         const fire=document.createElement("span");fire.className="day-fire";fire.textContent="🔥";button.appendChild(fire);
@@ -736,7 +727,6 @@ setInterval(()=>{
   }
 },10000);
 
-// Migrate earlier versions' history when possible.
 try{
   const old=JSON.parse(localStorage.getItem("dailyZipChallenge_v3")||"null");
   if(old&&Array.isArray(old.completedDates)){
