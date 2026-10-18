@@ -1,0 +1,759 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Zip Challenge | 7th Grade Encyclopedia</title>
+<style>
+:root{--bg:#101010;--panel:#191919;--orange:#ff7919;--red:#ff3c22;--text:#f6f6f6;--muted:#aaa;--line:#393939;--green:#65e6a0;--gold:#ffd45c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid white;outline-offset:3px}
+.topbar{height:72px;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:0 22px;background:#171717;border-bottom:2px solid var(--orange)}
+.brand{font-size:20px;font-weight:900}.brand span{color:var(--orange)}
+.subtitle{font-size:12px;color:#aaa;margin-top:4px}
+.credit{font-size:12px;color:#aaa;text-align:right}
+nav{display:flex;gap:8px;padding:12px 18px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab,.subtab{color:#ccc;background:transparent;border:1px solid transparent;border-radius:9px;padding:10px 15px;white-space:nowrap}
+.tab.active,.subtab.active{color:white;border-color:#803b17;background:#342016}
+main{max-width:1000px;margin:0 auto;padding:18px}
+.page{display:none}.page.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:15px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:800}.stat-value small{font-size:12px;color:#aaa;font-weight:500}
+.game-layout{display:grid;grid-template-columns:minmax(0,1fr) 185px;gap:15px;align-items:start}
+.board-card,.side-card,.section-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.board-wrap{width:100%;max-width:490px;margin:auto}
+.board{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));width:100%;aspect-ratio:1;border:2px solid #555;background:#252525;overflow:hidden;touch-action:manipulation}
+.cell{position:relative;min-width:0;min-height:0;padding:0;display:flex;justify-content:center;align-items:center;background:#202020;color:#eee;border:1px solid #454545;border-radius:0;font-size:clamp(10px,1.8vw,16px);font-weight:800}
+.cell.wall-top{border-top:3px solid #e85a23}.cell.wall-right{border-right:3px solid #e85a23}.cell.wall-bottom{border-bottom:3px solid #e85a23}.cell.wall-left{border-left:3px solid #e85a23}
+.cell.checkpoint{background:#303030;color:var(--orange)}
+.cell.visited{background:linear-gradient(135deg,#ff8a20,#ff4825);color:white}
+.cell.current{background:white;color:#171717;box-shadow:inset 0 0 0 3px var(--orange)}
+.cell.visited.checkpoint{color:white}
+.board-hint{text-align:center;color:#999;font-size:11px;margin-top:9px}
+.side-card{display:flex;flex-direction:column;gap:10px}
+.side-heading{font-size:14px;font-weight:800;margin-bottom:2px}
+.action{border:1px solid #555;background:#292929;color:white;padding:10px 9px;border-radius:9px;font-weight:700}
+.action.primary{background:linear-gradient(120deg,var(--orange),var(--red));border:0}
+.action:hover{filter:brightness(1.13)}.action:disabled{opacity:.4;cursor:not-allowed}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#ccc}
+.legend-dot{width:15px;height:15px;flex:0 0 15px;border-radius:4px;background:#303030;border:1px solid #666}
+.legend-dot.orange{background:linear-gradient(135deg,#ff8a20,#ff4825);border:0}
+.legend-dot.white{background:white}.legend-dot.wall{background:#e85a23;border:0}
+.side-note{font-size:11px;color:#999;line-height:1.5}
+.game-message{font-size:12px;color:#bbb;line-height:1.5;min-height:34px}
+.page-title{font-size:23px;font-weight:900;margin:2px 0 7px}
+.page-description{font-size:13px;line-height:1.6;color:#aaa;margin:0 0 17px}
+.subnav{display:flex;gap:8px;margin-bottom:14px}
+.history-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line)}
+.history-row:last-child{border-bottom:0}
+.history-date{font-weight:700;font-size:13px}.history-detail{font-size:11px;color:#aaa;margin-top:4px}
+.history-result{text-align:right;font-weight:800;color:var(--green);font-size:13px}
+.history-stars{color:var(--gold);font-size:14px;letter-spacing:1px}
+.empty{padding:25px 10px;text-align:center;color:#999;font-size:13px}
+.calendar-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px}
+.calendar-heading{font-weight:900;font-size:18px}
+.streak-line{font-size:12px;color:#bbb;margin-top:6px}.streak-line strong{color:var(--orange)}
+.month-controls{display:flex;gap:6px}.month-controls button{width:34px;height:34px;border:1px solid #444;border-radius:8px;background:#242424;color:white}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.weekday{text-align:center;color:#999;font-size:10px;padding:5px 0}
+.day{min-height:58px;position:relative;border:1px solid #383838;border-radius:8px;background:#202020;color:white;padding:6px 2px;display:flex;align-items:center;flex-direction:column;gap:5px}
+.day:disabled{opacity:.3;cursor:default}
+.day.today{border-color:var(--orange)}.day.selected{background:#482616;border-color:var(--orange)}
+.day.done{background:#183326;border-color:#347d52}
+.day-number{font-size:12px;font-weight:800}.day-check{font-size:13px;color:var(--green);line-height:1}.day-fire{font-size:12px;line-height:1}
+.calendar-legend{font-size:11px;color:#999;margin-top:12px;line-height:1.6}
+.notice{padding:12px;border:1px solid #5e391f;border-radius:10px;color:#ddd;background:#291d16;font-size:12px;line-height:1.5}
+.rules{padding-left:20px;color:#ddd;font-size:13px;line-height:1.8}.rules li{margin-bottom:8px}
+.modal-backdrop{position:fixed;inset:0;background:#000c;z-index:10;display:none;align-items:center;justify-content:center;padding:18px}
+.modal-backdrop.show{display:flex}
+.modal{width:min(400px,100%);background:#1b1b1b;border:1px solid #65371e;border-radius:16px;padding:24px;text-align:center;box-shadow:0 15px 70px #000a}
+.modal h2{margin:0 0 8px;font-size:24px}.modal p{color:#bbb;font-size:13px;line-height:1.6}
+.modal-time{font-size:35px;font-weight:900;color:var(--orange);margin:12px}
+.star-display{font-size:35px;letter-spacing:5px;color:#555;margin:12px 0}
+.star-display .earned{color:var(--gold);text-shadow:0 0 15px #ffba3533}
+.modal-actions{display:flex;gap:8px;margin-top:18px}.modal-actions button{flex:1}
+@media(max-width:620px){
+.topbar{height:64px;padding:0 13px}.brand{font-size:16px}main{padding:12px}
+.game-layout{grid-template-columns:minmax(0,1fr) 118px;gap:8px}
+.board-card,.side-card{padding:7px;border-radius:10px}.side-card{gap:8px}
+.side-heading{font-size:12px}.action{padding:9px 4px;font-size:11px}
+.legend-item{font-size:10px;gap:5px}.legend-dot{width:12px;height:12px;flex-basis:12px}
+.side-note{font-size:10px}.stats{gap:6px}.stat{padding:9px}.stat-value{font-size:18px}.stat-label{font-size:10px}
+.day{min-height:48px}.calendar-grid{gap:3px}.weekday{font-size:9px}
+}
+@media(max-width:370px){.game-layout{grid-template-columns:minmax(0,1fr) 104px}.credit{font-size:10px}.board-card{padding:4px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <div class="brand">Daily <span>Zip Challenge</span></div>
+    <div class="subtitle">7th Grade Encyclopedia</div>
+  </div>
+  <div class="credit">By: Sharvesh</div>
+</header>
+
+<nav>
+  <button class="tab active" data-page="game">Game</button>
+  <button class="tab" data-page="how">How to Play</button>
+  <button class="tab" data-page="history">History</button>
+</nav>
+
+<main>
+<section id="game" class="page active">
+  <div class="stats">
+    <div class="stat"><div class="stat-label">TIME</div><div class="stat-value" id="timer">00:00</div></div>
+    <div class="stat"><div class="stat-label">AVERAGE TIME</div><div class="stat-value" id="average">00:25</div></div>
+    <div class="stat"><div class="stat-label">STREAK 🔥</div><div class="stat-value" id="homeStreak">0 <small>days</small></div></div>
+  </div>
+  <div class="stat" style="margin-bottom:15px">
+    <div class="stat-label">TOTAL DAYS COMPLETED</div>
+    <div class="stat-value" id="homeTotal">0</div>
+  </div>
+  <div class="game-layout">
+    <div class="board-card">
+      <div class="board-wrap"><div class="board" id="board" aria-label="10 by 10 Zip puzzle board"></div></div>
+      <div class="board-hint" id="boardHint"></div>
+    </div>
+    <aside class="side-card">
+      <div class="side-heading">Actions</div>
+      <button class="action primary" id="startBtn">Start</button>
+      <button class="action" id="undoBtn">Undo</button>
+      <button class="action" id="restartBtn">Restart · 2</button>
+      <div class="side-note">Restart clears your path and costs 2 undos. Your timer keeps running.</div>
+      <div style="height:1px;background:#393939;margin:3px 0"></div>
+      <div class="side-heading">Legend</div>
+      <div class="legend-item"><span class="legend-dot"></span> Checkpoint</div>
+      <div class="legend-item"><span class="legend-dot orange"></span> Your path</div>
+      <div class="legend-item"><span class="legend-dot white"></span> Current cell</div>
+      <div class="legend-item"><span class="legend-dot wall"></span> Blocked edge</div>
+      <div style="height:1px;background:#393939;margin:3px 0"></div>
+      <div class="side-heading">Undos</div>
+      <div id="undoCount" style="font-size:22px;font-weight:900">0</div>
+      <div class="game-message" id="gameMessage">Use arrow keys or tap a neighboring square.</div>
+    </aside>
+  </div>
+</section>
+
+<section id="how" class="page">
+  <div class="page-title">How to Play</div>
+  <p class="page-description">Find the continuous route through the grid. Every square matters.</p>
+  <div class="section-card">
+    <ol class="rules">
+      <li>Start at checkpoint <strong>1</strong>.</li>
+      <li>Move one square at a time, up, down, left, or right.</li>
+      <li>Visit checkpoints <strong>1 through 15 in order</strong>.</li>
+      <li>Fill all 100 squares without revisiting any square.</li>
+      <li>Use the arrow keys or click a neighboring square. Blocked edges cannot be crossed.</li>
+      <li>Undo removes your last move. Restart clears the path and adds 2 to your undo count.</li>
+      <li>Restart does not reset the timer. The timer stops when you finish.</li>
+      <li>Only today's daily puzzle updates your streak and total. Calendar puzzles are practice.</li>
+      <li>Earn up to 3 stars for a fast, efficient solve.</li>
+    </ol>
+  </div>
+  <div class="notice">Your records are saved in this browser. Clearing browser site data can erase local records.</div>
+</section>
+
+<section id="history" class="page">
+  <div class="page-title">History</div>
+  <p class="page-description">Completed puzzles, earned stars, and your calendar.</p>
+  <div class="subnav">
+    <button class="subtab active" data-sub="records">History</button>
+    <button class="subtab" data-sub="calendar">Calendar</button>
+  </div>
+  <div id="recordsPanel">
+    <div class="stats">
+      <div class="stat"><div class="stat-label">TOTAL DAYS</div><div class="stat-value" id="historyTotal">0</div></div>
+      <div class="stat"><div class="stat-label">CURRENT STREAK</div><div class="stat-value" id="historyStreak">0 🔥</div></div>
+      <div class="stat"><div class="stat-label">BEST STARS</div><div class="stat-value" id="totalStars">0 ⭐</div></div>
+    </div>
+    <div class="section-card" id="historyList"></div>
+  </div>
+  <div id="calendarPanel" style="display:none">
+    <div class="section-card">
+      <div class="calendar-top">
+        <div>
+          <div class="calendar-heading">Calendar</div>
+          <div class="streak-line"><strong id="calendarStreak">0 day streak</strong> <span style="font-size:18px">🔥</span></div>
+        </div>
+        <div class="month-controls"><button id="prevMonth" aria-label="Previous month">‹</button><button id="nextMonth" aria-label="Next month">›</button></div>
+      </div>
+      <div class="calendar-heading" id="monthLabel" style="font-size:14px;margin-bottom:10px"></div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <div class="calendar-legend">✅ Completed puzzle · 🔥 Streak day · Select a past or current date to open its puzzle.</div>
+    </div>
+    <div class="notice">One missed day can be a grace day. Complete the following day to preserve your streak. Miss two days in a row and the streak resets. Practice puzzles never change daily stats.</div>
+  </div>
+</section>
+</main>
+
+<div class="modal-backdrop" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+  <div class="modal">
+    <h2 id="resultTitle">Puzzle complete!</h2>
+    <p id="resultDescription">You filled every square.</p>
+    <div class="star-display" id="resultStars" aria-label="Stars earned"></div>
+    <div class="modal-time" id="resultTime">00:00</div>
+    <p id="resultStats"></p>
+    <div class="modal-actions">
+      <button class="action" id="closeResult">Close</button>
+      <button class="action primary" id="resultHistory">View history</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+const SIZE=10,TOTAL=100,CHECKPOINTS=15;
+const STORE_KEY="dailyZipChallenge_v4";
+const COOKIE_KEY="dailyZipBackup_v4";
+const $=id=>document.getElementById(id);
+
+const todayKey=(date=new Date())=>
+  `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+
+const fromKey=key=>{
+  const [y,m,d]=key.split("-").map(Number);
+  return new Date(y,m-1,d,12);
+};
+
+const dayDifference=(a,b)=>Math.round((fromKey(b)-fromKey(a))/86400000);
+const dateLabel=key=>fromKey(key).toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"});
+const formatTime=seconds=>{
+  seconds=Math.max(0,Math.floor(seconds||0));
+  return `${String(Math.floor(seconds/60)).padStart(2,"0")}:${String(seconds%60).padStart(2,"0")}`;
+};
+const edgeKey=(a,b)=>a<b?`${a}-${b}`:`${b}-${a}`;
+
+function readCookie(name){
+  const part=document.cookie.split("; ").find(v=>v.startsWith(name+"="));
+  if(!part)return null;
+  try{return JSON.parse(decodeURIComponent(part.slice(name.length+1)))}catch{return null}
+}
+
+function loadData(){
+  let stored=null;
+  try{stored=JSON.parse(localStorage.getItem(STORE_KEY)||"null")}catch{}
+  const backup=readCookie(COOKIE_KEY);
+  if(!stored||typeof stored!=="object")stored={};
+  if(!Array.isArray(stored.completedDates))stored.completedDates=[];
+  if(!stored.records||typeof stored.records!=="object")stored.records={};
+  if(!Number.isFinite(stored.streak))stored.streak=0;
+  if(!Number.isFinite(stored.bestStreak))stored.bestStreak=stored.streak;
+  if(!stored.lastDailyDate)stored.lastDailyDate="";
+  if(backup&&Array.isArray(backup.completedDates)){
+    stored.completedDates=[...new Set([...stored.completedDates,...backup.completedDates])].sort();
+    stored.records={...(backup.records||{}),...stored.records};
+    if(!stored.lastDailyDate&&backup.lastDailyDate)stored.lastDailyDate=backup.lastDailyDate;
+    if(!stored.streak&&Number.isFinite(backup.streak))stored.streak=backup.streak;
+    if(!stored.bestStreak&&Number.isFinite(backup.bestStreak))stored.bestStreak=backup.bestStreak;
+  }
+  return stored;
+}
+
+let data=loadData();
+
+function saveData(){
+  data.completedDates=[...new Set(data.completedDates)].sort();
+  try{localStorage.setItem(STORE_KEY,JSON.stringify(data))}catch{}
+  // Compact backup cookie; localStorage is the primary storage.
+  const backup={
+    completedDates:data.completedDates.slice(-100),
+    records:Object.fromEntries(Object.entries(data.records).slice(-20)),
+    streak:data.streak,bestStreak:data.bestStreak,lastDailyDate:data.lastDailyDate
+  };
+  try{
+    document.cookie=COOKIE_KEY+"="+encodeURIComponent(JSON.stringify(backup))+
+      "; max-age=31536000; path=/; SameSite=Lax";
+  }catch{}
+}
+
+function effectiveStreak(){
+  if(!data.lastDailyDate)return 0;
+  return dayDifference(data.lastDailyDate,todayKey())>2?0:data.streak;
+}
+
+function refreshStats(){
+  $("homeStreak").innerHTML=`${effectiveStreak()} <small>days</small>`;
+  $("homeTotal").textContent=data.completedDates.length;
+  $("historyTotal").textContent=data.completedDates.length;
+  $("historyStreak").textContent=`${effectiveStreak()} 🔥`;
+  const stars=data.completedDates.reduce((sum,date)=>sum+(data.records[date]?.stars||0),0);
+  $("totalStars").textContent=`${stars} ⭐`;
+  $("calendarStreak").textContent=`${effectiveStreak()} day streak`;
+}
+
+// Deterministic seeded random generator. The same date produces the same puzzle.
+function makePuzzle(dateKey){
+  let seed=2166136261;
+  for(const ch of dateKey){seed^=ch.charCodeAt(0);seed=Math.imul(seed,16777619)}
+  function random(){
+    seed+=0x6D2B79F5;
+    let t=seed;
+    t=Math.imul(t^(t>>>15),t|1);
+    t^=t+Math.imul(t^(t>>>7),t|61);
+    return ((t^(t>>>14))>>>0)/4294967296;
+  }
+  function neighbors(cell){
+    const r=Math.floor(cell/SIZE),c=cell%SIZE,out=[];
+    if(r>0)out.push(cell-SIZE);
+    if(r<SIZE-1)out.push(cell+SIZE);
+    if(c>0)out.push(cell-1);
+    if(c<SIZE-1)out.push(cell+1);
+    return out;
+  }
+
+  let route=null;
+  // Randomized backtracking searches for a Hamiltonian path through every cell.
+  for(let attempt=0;attempt<22&&!route;attempt++){
+    const start=Math.floor(random()*TOTAL);
+    const visited=new Uint8Array(TOTAL);
+    const candidate=[start];
+    let explored=0;
+    visited[start]=1;
+
+    function search(cell){
+      explored++;
+      if(candidate.length===TOTAL)return true;
+      if(explored>45000)return false;
+
+      const options=neighbors(cell).filter(n=>!visited[n]);
+      for(let i=options.length-1;i>0;i--){
+        const j=Math.floor(random()*(i+1));
+        [options[i],options[j]]=[options[j],options[i]];
+      }
+      options.sort((a,b)=>
+        neighbors(a).filter(n=>!visited[n]).length-
+        neighbors(b).filter(n=>!visited[n]).length
+      );
+
+      for(const next of options){
+        visited[next]=1;candidate.push(next);
+        if(search(next))return true;
+        candidate.pop();visited[next]=0;
+        if(explored>45000)return false;
+      }
+      return false;
+    }
+
+    if(search(start))route=candidate.slice();
+  }
+
+  // Guaranteed valid fallback.
+  if(!route){
+    route=[];
+    const vertical=random()<0.5,flipX=random()<0.5,flipY=random()<0.5;
+    for(let r=0;r<SIZE;r++){
+      for(let step=0;step<SIZE;step++){
+        const c=r%2===0?step:SIZE-1-step;
+        let x=vertical?r:c,y=vertical?c:r;
+        if(flipX)x=SIZE-1-x;
+        if(flipY)y=SIZE-1-y;
+        route.push(y*SIZE+x);
+      }
+    }
+  }
+
+  const checkpoints=new Map();
+  for(let n=1;n<=CHECKPOINTS;n++){
+    const position=Math.round((n-1)*(TOTAL-1)/(CHECKPOINTS-1));
+    checkpoints.set(route[position],n);
+  }
+
+  const routeEdges=new Set();
+  for(let i=1;i<route.length;i++)routeEdges.add(edgeKey(route[i-1],route[i]));
+
+  // Only some non-solution edges are blocked, so walls don't draw the whole answer.
+  const blockedEdges=new Set();
+  for(let cell=0;cell<TOTAL;cell++){
+    for(const neighbor of neighbors(cell)){
+      if(neighbor<=cell)continue;
+      const key=edgeKey(cell,neighbor);
+      if(!routeEdges.has(key)&&random()<0.13)blockedEdges.add(key);
+    }
+  }
+
+  const date=fromKey(dateKey);
+  const yearStart=new Date(date.getFullYear(),0,1,12);
+  const dayIndex=Math.floor((date-yearStart)/86400000);
+  const puzzleIndex=((dayIndex%30)+30)%30;
+
+  return {dateKey,puzzleIndex,route,checkpoints,routeEdges,blockedEdges,
+    average:25+((puzzleIndex*7)%11)};
+}
+
+let activeDate=todayKey();
+let puzzle=makePuzzle(activeDate);
+let path=[],undos=0,startedAt=null,elapsed=0,finished=false,timerInterval=null;
+let currentMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1,12);
+let selectedCalendarDate=todayKey();
+
+function secondsNow(){return startedAt===null?elapsed:elapsed+(Date.now()-startedAt)/1000}
+function updateTimer(){$("timer").textContent=formatTime(secondsNow())}
+
+function startClock(){
+  if(startedAt===null&&!finished)startedAt=Date.now();
+  if(!timerInterval)timerInterval=setInterval(updateTimer,200);
+}
+function stopClock(){
+  if(startedAt!==null){elapsed+=(Date.now()-startedAt)/1000;startedAt=null}
+  if(timerInterval)clearInterval(timerInterval);
+  timerInterval=null;updateTimer();
+}
+function resetClock(){stopClock();elapsed=0;startedAt=null;updateTimer()}
+function adjacent(a,b){return Math.abs(Math.floor(a/SIZE)-Math.floor(b/SIZE))+Math.abs(a%SIZE-b%SIZE)===1}
+function hasWall(a,b){return puzzle.blockedEdges.has(edgeKey(a,b))}
+function setMessage(message){$("gameMessage").textContent=message}
+
+function checkpointProgress(candidate){
+  let count=0;
+  for(const cell of candidate){
+    const n=puzzle.checkpoints.get(cell);
+    if(n){if(n!==count+1)return -1;count++}
+  }
+  return count;
+}
+
+function renderBoard(){
+  const board=$("board");
+  board.innerHTML="";
+  const visited=new Set(path),current=path.length?path[path.length-1]:-1;
+
+  for(let cell=0;cell<TOTAL;cell++){
+    const r=Math.floor(cell/SIZE),c=cell%SIZE;
+    const button=document.createElement("button");
+    button.type="button";button.className="cell";
+    const checkpoint=puzzle.checkpoints.get(cell);
+    button.setAttribute("aria-label",`Row ${r+1}, column ${c+1}`+(checkpoint?`, checkpoint ${checkpoint}`:""));
+    if(checkpoint){button.classList.add("checkpoint");button.textContent=checkpoint}
+    if(visited.has(cell))button.classList.add("visited");
+    if(cell===current)button.classList.add("current");
+
+    const neighbors=[
+      [r>0?cell-SIZE:-1,"wall-top"],
+      [c<SIZE-1?cell+1:-1,"wall-right"],
+      [r<SIZE-1?cell+SIZE:-1,"wall-bottom"],
+      [c>0?cell-1:-1,"wall-left"]
+    ];
+    for(const [neighbor,cls] of neighbors){
+      if(neighbor>=0&&hasWall(cell,neighbor))button.classList.add(cls);
+    }
+    button.addEventListener("click",()=>clickCell(cell));
+    board.appendChild(button);
+  }
+
+  $("undoCount").textContent=undos;
+  $("undoBtn").disabled=path.length===0||finished;
+  $("restartBtn").disabled=finished;
+  $("startBtn").disabled=finished||path.length>0;
+  $("average").textContent=formatTime(puzzle.average);
+  $("boardHint").textContent=activeDate===todayKey()
+    ?"Today's puzzle. Fill all 100 squares and connect 1–15 in order."
+    :`Practice puzzle for ${dateLabel(activeDate)}. Practice does not affect your streak.`;
+}
+
+function startPuzzle(){
+  if(finished||path.length)return;
+  const start=[...puzzle.checkpoints.entries()].find(([,n])=>n===1)?.[0];
+  if(start===undefined)return;
+  path=[start];
+  startClock();
+  setMessage("You're in! Connect the checkpoints in order.");
+  renderBoard();
+}
+
+function clickCell(cell){
+  if(finished)return;
+  if(!path.length){
+    if(puzzle.checkpoints.get(cell)===1)startPuzzle();
+    else setMessage("Start at checkpoint 1.");
+    return;
+  }
+  const last=path[path.length-1];
+  if(path.length>1&&cell===path[path.length-2]){undoMove();return}
+  if(!adjacent(last,cell)){setMessage("Move to a neighboring square.");return}
+  tryMove(cell);
+}
+
+function tryMove(cell){
+  if(finished)return;
+  if(!path.length){
+    if(puzzle.checkpoints.get(cell)===1)startPuzzle();
+    else setMessage("Start at checkpoint 1.");
+    return;
+  }
+  const last=path[path.length-1];
+  if(!adjacent(last,cell)){setMessage("You can only move one square at a time.");return}
+  if(hasWall(last,cell)){setMessage("That edge is blocked. Find another route.");return}
+  if(path.includes(cell)){setMessage("You cannot visit a square twice.");return}
+
+  const nextPath=[...path,cell];
+  const count=checkpointProgress(nextPath);
+  if(count===-1){setMessage("Connect the numbered checkpoints in order.");return}
+
+  path=nextPath;startClock();
+  if(path.length===TOTAL){
+    if(count===CHECKPOINTS)completePuzzle();
+    else setMessage("All squares are filled, but a checkpoint is missing.");
+  }else{
+    const checkpoint=puzzle.checkpoints.get(cell);
+    setMessage(checkpoint?`Checkpoint ${checkpoint} reached! Keep going.`:`${path.length} of ${TOTAL} squares filled.`);
+  }
+  renderBoard();
+}
+
+function undoMove(){
+  if(!path.length||finished)return;
+  path.pop();undos++;
+  setMessage(path.length?"Last move undone.":"Start removed. Begin again at checkpoint 1.");
+  renderBoard();
+}
+
+function restartPuzzle(){
+  if(finished)return;
+  path=[];undos+=2;
+  setMessage("Board reset. The timer is still running.");
+  renderBoard();
+}
+
+// Star rating: 3 stars for a fast, efficient run, 2 for a solid run,
+// and 1 for completing the puzzle. Every completed run earns at least 1.
+function calculateStars(seconds,undoCount){
+  if(seconds<=puzzle.average&&undoCount<=2)return 3;
+  if(seconds<=puzzle.average*1.5&&undoCount<=6)return 2;
+  return 1;
+}
+
+function starText(count){return "★".repeat(count)+"☆".repeat(3-count)}
+
+function completePuzzle(){
+  finished=true;
+  stopClock();
+  const time=Math.floor(secondsNow());
+  const isDaily=activeDate===todayKey();
+  const alreadyDone=data.completedDates.includes(activeDate);
+  const stars=calculateStars(time,undos);
+
+  if(isDaily&&!alreadyDone){
+    data.completedDates.push(activeDate);
+    const gap=data.lastDailyDate?dayDifference(data.lastDailyDate,todayKey()):999;
+    data.streak=(gap===1||gap===2)?Math.max(1,data.streak)+1:1;
+    data.bestStreak=Math.max(data.bestStreak||0,data.streak);
+    data.lastDailyDate=todayKey();
+  }
+
+  // Keep the best result for that date. Stars are saved with the result.
+  if(isDaily){
+    const previous=data.records[activeDate];
+    const result={time,undos,stars,completedAt:new Date().toISOString()};
+    if(!previous||stars>previous.stars||(stars===previous.stars&&time<previous.time)){
+      data.records[activeDate]=result;
+    }
+  }
+
+  saveData();
+  refreshStats();
+  renderHistory();
+  renderCalendar();
+
+  $("resultTitle").textContent=isDaily?(alreadyDone?"Practice complete!":"Puzzle complete!"):"Practice complete!";
+  $("resultDescription").textContent=isDaily
+    ?(alreadyDone?"Today's puzzle was already counted. This run can still earn a new personal best.":"You completed today's daily challenge!")
+    :"Practice puzzle completed. Your daily stats stay unchanged.";
+
+  $("resultStars").innerHTML=[1,2,3].map(n=>
+    `<span class="${n<=stars?"earned":""}">${n<=stars?"★":"☆"}</span>`
+  ).join("");
+  $("resultStars").setAttribute("aria-label",`${stars} out of 3 stars`);
+  $("resultTime").textContent=formatTime(time);
+  $("resultStats").textContent=`${stars} out of 3 stars · ${undos} undos · Average target: ${formatTime(puzzle.average)}. `+
+    (isDaily&&!alreadyDone?`Streak: ${effectiveStreak()} days. Total days: ${data.completedDates.length}.`:
+      "Practice runs do not change daily stats.");
+  $("resultModal").classList.add("show");
+  setMessage(`Puzzle complete! You earned ${stars} star${stars===1?"":"s"}.`);
+  renderBoard();
+}
+
+function loadPuzzle(dateKey){
+  activeDate=dateKey;puzzle=makePuzzle(dateKey);
+  path=[];undos=0;finished=false;resetClock();
+  setMessage(dateKey===todayKey()?"Ready for today's challenge.":"Practice mode. This puzzle won't change your streak.");
+  renderBoard();showPage("game");
+}
+
+function showPage(page){
+  document.querySelectorAll(".tab").forEach(btn=>btn.classList.toggle("active",btn.dataset.page===page));
+  document.querySelectorAll(".page").forEach(section=>section.classList.toggle("active",section.id===page));
+  if(page==="history"){renderHistory();renderCalendar()}
+}
+
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>showPage(btn.dataset.page)));
+
+document.querySelectorAll(".subtab").forEach(btn=>btn.addEventListener("click",()=>{
+  document.querySelectorAll(".subtab").forEach(b=>b.classList.toggle("active",b===btn));
+  const calendar=btn.dataset.sub==="calendar";
+  $("recordsPanel").style.display=calendar?"none":"block";
+  $("calendarPanel").style.display=calendar?"block":"none";
+  if(calendar)renderCalendar();
+}));
+
+$("startBtn").addEventListener("click",startPuzzle);
+$("undoBtn").addEventListener("click",undoMove);
+$("restartBtn").addEventListener("click",restartPuzzle);
+$("closeResult").addEventListener("click",()=>$("resultModal").classList.remove("show"));
+$("resultHistory").addEventListener("click",()=>{
+  $("resultModal").classList.remove("show");showPage("history");
+});
+
+document.addEventListener("keydown",event=>{
+  if(!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(event.key))return;
+  if($("resultModal").classList.contains("show")||!$("game").classList.contains("active"))return;
+  event.preventDefault();
+  if(!path.length){startPuzzle();return}
+  const last=path[path.length-1];
+  let next=last;
+  if(event.key==="ArrowUp")next-=SIZE;
+  if(event.key==="ArrowDown")next+=SIZE;
+  if(event.key==="ArrowLeft")next--;
+  if(event.key==="ArrowRight")next++;
+  if(next<0||next>=TOTAL||!adjacent(last,next))return;
+  tryMove(next);
+});
+
+function renderHistory(){
+  const list=$("historyList");
+  const dates=[...data.completedDates].sort().reverse();
+  if(!dates.length){
+    list.innerHTML='<div class="empty">No completed daily puzzles yet. Your first finish will appear here.</div>';
+    refreshStats();return;
+  }
+  list.innerHTML="";
+  for(const date of dates){
+    const record=data.records[date];
+    const row=document.createElement("div");row.className="history-row";
+    const left=document.createElement("div");
+    const label=document.createElement("div");label.className="history-date";
+    label.textContent="✅ "+dateLabel(date);
+    const detail=document.createElement("div");detail.className="history-detail";
+    detail.textContent=record?`Undos: ${record.undos??0}`:"Completed";
+    left.append(label,detail);
+    const right=document.createElement("div");right.className="history-result";
+    if(record){
+      const stars=document.createElement("div");stars.className="history-stars";
+      stars.textContent=starText(record.stars||1);
+      const time=document.createElement("div");time.textContent=formatTime(record.time);
+      right.append(stars,time);
+    }else right.textContent="Done";
+    row.append(left,right);list.appendChild(row);
+  }
+  refreshStats();
+}
+
+function renderCalendar(){
+  const year=currentMonth.getFullYear(),month=currentMonth.getMonth();
+  $("monthLabel").textContent=currentMonth.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+  const now=new Date();
+  $("prevMonth").disabled=year<2020;
+  $("nextMonth").disabled=year===now.getFullYear()&&month===now.getMonth();
+
+  const grid=$("calendarGrid");grid.innerHTML="";
+  ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(name=>{
+    const el=document.createElement("div");el.className="weekday";el.textContent=name;grid.appendChild(el);
+  });
+
+  const firstDay=new Date(year,month,1,12).getDay();
+  const days=new Date(year,month+1,0,12).getDate();
+  const today=todayKey(),done=new Set(data.completedDates);
+  for(let i=0;i<firstDay;i++)grid.appendChild(document.createElement("div"));
+
+  for(let day=1;day<=days;day++){
+    const key=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    const button=document.createElement("button");button.className="day";button.type="button";
+    const future=key>today;button.disabled=future;
+    if(key===today)button.classList.add("today");
+    if(key===selectedCalendarDate)button.classList.add("selected");
+    if(done.has(key))button.classList.add("done");
+
+    const num=document.createElement("span");num.className="day-number";num.textContent=day;button.appendChild(num);
+    if(done.has(key)){
+      const check=document.createElement("span");check.className="day-check";check.textContent="✓";button.appendChild(check);
+      // Mark completed dates within the current streak window with a flame.
+      const gap=data.lastDailyDate?dayDifference(key,data.lastDailyDate):999;
+      if(gap>=0&&gap<=Math.max(0,data.streak-1)){
+        const fire=document.createElement("span");fire.className="day-fire";fire.textContent="🔥";button.appendChild(fire);
+      }
+    }
+    button.addEventListener("click",()=>{
+      selectedCalendarDate=key;renderCalendar();loadPuzzle(key);
+    });
+    grid.appendChild(button);
+  }
+}
+
+$("prevMonth").addEventListener("click",()=>{
+  currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()-1,1,12);
+  renderCalendar();
+});
+$("nextMonth").addEventListener("click",()=>{
+  const next=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+1,1,12);
+  const now=new Date();
+  if(next<=new Date(now.getFullYear(),now.getMonth(),1,12)){currentMonth=next;renderCalendar()}
+});
+
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"){
+    const today=todayKey();
+    if(today!==activeDate){
+      activeDate=today;puzzle=makePuzzle(today);path=[];undos=0;finished=false;
+      resetClock();currentMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1,12);
+      selectedCalendarDate=today;setMessage("A new daily puzzle is ready!");
+      renderBoard();refreshStats();renderHistory();renderCalendar();
+    }
+  }
+});
+
+window.addEventListener("storage",event=>{
+  if(event.key===STORE_KEY){
+    data=loadData();refreshStats();renderHistory();renderCalendar();
+  }
+});
+
+let observedToday=todayKey();
+setInterval(()=>{
+  const today=todayKey();
+  if(today!==observedToday){
+    observedToday=today;activeDate=today;puzzle=makePuzzle(today);
+    path=[];undos=0;finished=false;resetClock();
+    currentMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1,12);
+    selectedCalendarDate=today;setMessage("A new daily puzzle is ready!");
+    renderBoard();refreshStats();renderHistory();renderCalendar();
+  }
+},10000);
+
+// Migrate earlier versions' history when possible.
+try{
+  const old=JSON.parse(localStorage.getItem("dailyZipChallenge_v3")||"null");
+  if(old&&Array.isArray(old.completedDates)){
+    data.completedDates=[...new Set([...data.completedDates,...old.completedDates])].sort();
+    data.records={...old.records,...data.records};
+    if(!data.lastDailyDate)data.lastDailyDate=old.lastDailyDate||"";
+    if(!data.streak)data.streak=old.streak||0;
+    if(!data.bestStreak)data.bestStreak=old.bestStreak||0;
+  }
+}catch{}
+
+saveData();
+refreshStats();
+renderHistory();
+renderCalendar();
+loadPuzzle(todayKey());
+})();
+</script>
+</body>
+</html>
