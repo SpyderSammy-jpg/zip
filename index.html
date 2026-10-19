@@ -11,7 +11,7 @@
 body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
 button{font:inherit;cursor:pointer}
 button:focus-visible{outline:2px solid white;outline-offset:3px}
-.topbar{height:72px;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:0 22px;background:#171717;border-bottom:2px solid var(--orange)}
+.topbar{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:12px 22px;background:#171717;border-bottom:2px solid var(--orange)}
 .brand{font-size:20px;font-weight:900}.brand span{color:var(--orange)}
 .subtitle{font-size:12px;color:#aaa;margin-top:4px}
 .credit{font-size:12px;color:#aaa;text-align:right}
@@ -33,9 +33,9 @@ main{max-width:1000px;margin:0 auto;padding:18px}
 .cell.checkpoint{background:#303030;color:var(--orange)}
 .cell.visited{background:linear-gradient(135deg,#ff8a20,#ff4825);color:white}
 .cell.current{background:white;color:#171717;box-shadow:inset 0 0 0 3px var(--orange)}
-.cell.visited.checkpoint{color:white}
 .board-hint{text-align:center;color:#999;font-size:11px;margin-top:9px}
 .board-cover{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center;background:#151515f5;border:2px solid var(--orange);border-radius:12px}
+.board-cover[hidden]{display:none}
 .board-cover h2{margin:0;color:var(--orange);font-size:24px}
 .board-cover p{margin:0;color:#ccc;font-size:13px;line-height:1.6}
 .side-card{display:flex;flex-direction:column;gap:10px}
@@ -81,7 +81,7 @@ main{max-width:1000px;margin:0 auto;padding:18px}
 .star-display .earned{color:var(--gold);text-shadow:0 0 15px #ffba3533}
 .modal-actions{display:flex;gap:8px;margin-top:18px}.modal-actions button{flex:1}
 @media(max-width:620px){
-.topbar{height:64px;padding:0 13px}.brand{font-size:16px}main{padding:12px}
+.topbar{padding:12px 13px}.brand{font-size:16px}main{padding:12px}
 .game-layout{grid-template-columns:minmax(0,1fr) 118px;gap:8px}
 .board-card,.side-card{padding:7px;border-radius:10px}.side-card{gap:8px}
 .side-heading{font-size:12px}.action{padding:9px 4px;font-size:11px}
@@ -125,7 +125,7 @@ main{max-width:1000px;margin:0 auto;padding:18px}
         <div class="board-cover" id="boardCover" hidden>
           <h2>Daily Puzzle Complete! 🔒</h2>
           <p id="coverMessage">You've already completed today's challenge.</p>
-          <p>Your saved result is protected. A new puzzle unlocks tomorrow.</p>
+          <p>Your result is saved. A new daily puzzle unlocks tomorrow.</p>
         </div>
       </div>
       <div class="board-hint" id="boardHint"></div>
@@ -135,7 +135,7 @@ main{max-width:1000px;margin:0 auto;padding:18px}
       <button class="action primary" id="startBtn">Start</button>
       <button class="action" id="undoBtn">Undo</button>
       <button class="action" id="restartBtn">Restart · 2</button>
-      <div class="side-note">Restart clears your path and costs 2 undos. Your timer keeps running.</div>
+      <div class="side-note">Restart clears your path and adds 2 undos. Your timer keeps running.</div>
       <div style="height:1px;background:#393939;margin:3px 0"></div>
       <div class="side-heading">Legend</div>
       <div class="legend-item"><span class="legend-dot"></span> Checkpoint</div>
@@ -159,14 +159,14 @@ main{max-width:1000px;margin:0 auto;padding:18px}
       <li>Move one square at a time, up, down, left, or right.</li>
       <li>Visit checkpoints <strong>1 through 15 in order</strong>.</li>
       <li>Fill all 100 squares without revisiting any square.</li>
-      <li>Use the arrow keys or click a neighboring square. Blocked edges cannot be crossed.</li>
+      <li>Use arrow keys or click a neighboring square. Blocked edges cannot be crossed.</li>
       <li>Undo removes your last move. Restart clears the path and adds 2 to your undo count.</li>
       <li>Restart does not reset the timer. The timer stops when you finish.</li>
       <li>Only today's daily puzzle updates your streak and total. Calendar puzzles are practice.</li>
       <li>Earn up to 3 stars for a fast, efficient solve.</li>
     </ol>
   </div>
-  <div class="notice">Your records are saved in this browser. Clearing browser site data can erase local records.</div>
+  <div class="notice">Records are saved locally in this browser. Clearing site data can erase them. Records do not automatically sync across devices.</div>
 </section>
 
 <section id="history" class="page">
@@ -195,9 +195,9 @@ main{max-width:1000px;margin:0 auto;padding:18px}
       </div>
       <div class="calendar-heading" id="monthLabel" style="font-size:14px;margin-bottom:10px"></div>
       <div class="calendar-grid" id="calendarGrid"></div>
-      <div class="calendar-legend">✅ Completed puzzle · 🔥 Streak day · Select a past or current date to open its puzzle.</div>
+      <div class="calendar-legend">✅ Completed puzzle · 🔥 Streak day · Select a date to open its puzzle.</div>
     </div>
-    <div class="notice">One missed day can be a grace day. Complete the following day to preserve your streak. Miss two days in a row and the streak resets. Practice puzzles never change daily stats.</div>
+    <div class="notice">Missed days can be a grace day. Complete the following day to preserve your streak. Miss two days in a row and the streak resets. Practice puzzles never change daily stats.</div>
   </div>
 </section>
 </main>
@@ -206,7 +206,7 @@ main{max-width:1000px;margin:0 auto;padding:18px}
   <div class="modal">
     <h2 id="resultTitle">Puzzle complete!</h2>
     <p id="resultDescription">You filled every square.</p>
-    <div class="star-display" id="resultStars" aria-label="Stars earned"></div>
+    <div class="star-display" id="resultStars"></div>
     <div class="modal-time" id="resultTime">00:00</div>
     <p id="resultStats"></p>
     <div class="modal-actions">
@@ -221,18 +221,22 @@ main{max-width:1000px;margin:0 auto;padding:18px}
 "use strict";
 
 const SIZE=10,TOTAL=100,CHECKPOINTS=15;
-const STORE_KEY="dailyZipChallenge_v4";
-const COOKIE_KEY="dailyZipBackup_v4";
-const $=id=>document.getElementById(id);
 
+/*
+  Fresh local-only storage:
+  - No cookies are used.
+  - No old shared or backup records are imported.
+  - A completion on this browser persists after refresh.
+*/
+const STORE_KEY="dailyZipChallenge_device_local_v5";
+
+const $=id=>document.getElementById(id);
 const todayKey=(date=new Date())=>
   `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
-
 const fromKey=key=>{
   const [y,m,d]=key.split("-").map(Number);
   return new Date(y,m-1,d,12);
 };
-
 const dayDifference=(a,b)=>Math.round((fromKey(b)-fromKey(a))/86400000);
 const dateLabel=key=>fromKey(key).toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"});
 const formatTime=seconds=>{
@@ -241,57 +245,38 @@ const formatTime=seconds=>{
 };
 const edgeKey=(a,b)=>a<b?`${a}-${b}`:`${b}-${a}`;
 
-function readCookie(name){
-  const part=document.cookie.split("; ").find(v=>v.startsWith(name+"="));
-  if(!part)return null;
-  try{return JSON.parse(decodeURIComponent(part.slice(name.length+1)))}catch{return null}
-}
-
 function loadData(){
-  let stored=null;
-  try{stored=JSON.parse(localStorage.getItem(STORE_KEY)||"null")}catch{}
-  const backup=readCookie(COOKIE_KEY);
-  if(!stored||typeof stored!=="object")stored={};
-  if(!Array.isArray(stored.completedDates))stored.completedDates=[];
-  if(!stored.records||typeof stored.records!=="object")stored.records={};
-  if(!Number.isFinite(stored.streak))stored.streak=0;
-  if(!Number.isFinite(stored.bestStreak))stored.bestStreak=stored.streak;
-  if(!stored.lastDailyDate)stored.lastDailyDate="";
-  if(backup&&Array.isArray(backup.completedDates)){
-    stored.completedDates=[...new Set([...stored.completedDates,...backup.completedDates])].sort();
-    stored.records={...(backup.records||{}),...stored.records};
-    if(!stored.lastDailyDate&&backup.lastDailyDate)stored.lastDailyDate=backup.lastDailyDate;
-    if(!stored.streak&&Number.isFinite(backup.streak))stored.streak=backup.streak;
-    if(!stored.bestStreak&&Number.isFinite(backup.bestStreak))stored.bestStreak=backup.bestStreak;
-  }
-  return stored;
+  try{
+    const stored=JSON.parse(localStorage.getItem(STORE_KEY)||"null");
+    if(stored&&typeof stored==="object"){
+      return {
+        completedDates:Array.isArray(stored.completedDates)?stored.completedDates:[],
+        records:stored.records&&typeof stored.records==="object"?stored.records:{},
+        streak:Number.isFinite(stored.streak)?stored.streak:0,
+        bestStreak:Number.isFinite(stored.bestStreak)?stored.bestStreak:0,
+        lastDailyDate:typeof stored.lastDailyDate==="string"?stored.lastDailyDate:""
+      };
+    }
+  }catch{}
+  return {completedDates:[],records:{},streak:0,bestStreak:0,lastDailyDate:""};
 }
 
 let data=loadData();
 
+function saveData(){
+  data.completedDates=[...new Set(data.completedDates)].sort();
+  try{localStorage.setItem(STORE_KEY,JSON.stringify(data))}catch{
+    setMessage("Browser storage is unavailable. Your result may not persist after closing this page.");
+  }
+}
+
 function isTodayCompleted(){
   return data.completedDates.includes(todayKey());
 }
-
-function saveData(){
-  data.completedDates=[...new Set(data.completedDates)].sort();
-  try{localStorage.setItem(STORE_KEY,JSON.stringify(data))}catch{}
-  const backup={
-    completedDates:data.completedDates.slice(-100),
-    records:Object.fromEntries(Object.entries(data.records).slice(-20)),
-    streak:data.streak,bestStreak:data.bestStreak,lastDailyDate:data.lastDailyDate
-  };
-  try{
-    document.cookie=COOKIE_KEY+"="+encodeURIComponent(JSON.stringify(backup))+
-      "; max-age=31536000; path=/; SameSite=Lax";
-  }catch{}
-}
-
 function effectiveStreak(){
   if(!data.lastDailyDate)return 0;
   return dayDifference(data.lastDailyDate,todayKey())>2?0:data.streak;
 }
-
 function refreshStats(){
   $("homeStreak").innerHTML=`${effectiveStreak()} <small>days</small>`;
   $("homeTotal").textContent=data.completedDates.length;
@@ -328,7 +313,6 @@ function makePuzzle(dateKey){
     const candidate=[start];
     let explored=0;
     visited[start]=1;
-
     function search(cell){
       explored++;
       if(candidate.length===TOTAL)return true;
@@ -369,13 +353,10 @@ function makePuzzle(dateKey){
 
   const checkpoints=new Map();
   for(let n=1;n<=CHECKPOINTS;n++){
-    const position=Math.round((n-1)*(TOTAL-1)/(CHECKPOINTS-1));
-    checkpoints.set(route[position],n);
+    checkpoints.set(route[Math.round((n-1)*(TOTAL-1)/(CHECKPOINTS-1))],n);
   }
-
   const routeEdges=new Set();
   for(let i=1;i<route.length;i++)routeEdges.add(edgeKey(route[i-1],route[i]));
-
   const blockedEdges=new Set();
   for(let cell=0;cell<TOTAL;cell++){
     for(const neighbor of neighbors(cell)){
@@ -384,13 +365,9 @@ function makePuzzle(dateKey){
       if(!routeEdges.has(key)&&random()<0.13)blockedEdges.add(key);
     }
   }
-
   const date=fromKey(dateKey);
-  const yearStart=new Date(date.getFullYear(),0,1,12);
-  const dayIndex=Math.floor((date-yearStart)/86400000);
-  const puzzleIndex=((dayIndex%30)+30)%30;
-
-  return {dateKey,puzzleIndex,route,checkpoints,routeEdges,blockedEdges,average:60};
+  const dayIndex=Math.floor((date-new Date(date.getFullYear(),0,1,12))/86400000);
+  return {dateKey,puzzleIndex:((dayIndex%30)+30)%30,route,checkpoints,routeEdges,blockedEdges,average:60};
 }
 
 let activeDate=todayKey();
@@ -401,7 +378,6 @@ let selectedCalendarDate=todayKey();
 
 function secondsNow(){return startedAt===null?elapsed:elapsed+(Date.now()-startedAt)/1000}
 function updateTimer(){$("timer").textContent=formatTime(secondsNow())}
-
 function startClock(){
   if(startedAt===null&&!finished)startedAt=Date.now();
   if(!timerInterval)timerInterval=setInterval(updateTimer,200);
@@ -412,9 +388,12 @@ function stopClock(){
   timerInterval=null;updateTimer();
 }
 function resetClock(){stopClock();elapsed=0;startedAt=null;updateTimer()}
-function adjacent(a,b){return Math.abs(Math.floor(a/SIZE)-Math.floor(b/SIZE))+Math.abs(a%SIZE-b%SIZE)===1}
+function adjacent(a,b){
+  return Math.abs(Math.floor(a/SIZE)-Math.floor(b/SIZE))+Math.abs(a%SIZE-b%SIZE)===1;
+}
 function hasWall(a,b){return puzzle.blockedEdges.has(edgeKey(a,b))}
 function setMessage(message){$("gameMessage").textContent=message}
+function isLockedDaily(){return activeDate===todayKey()&&isTodayCompleted()}
 
 function coverBoard(message="You've already completed today's challenge."){
   $("boardCover").hidden=false;
@@ -423,10 +402,7 @@ function coverBoard(message="You've already completed today's challenge."){
   $("undoBtn").disabled=true;
   $("restartBtn").disabled=true;
 }
-
-function uncoverBoard(){
-  $("boardCover").hidden=true;
-}
+function uncoverBoard(){$("boardCover").hidden=true}
 
 function checkpointProgress(candidate){
   let count=0;
@@ -451,13 +427,13 @@ function renderBoard(){
     if(checkpoint){button.classList.add("checkpoint");button.textContent=checkpoint}
     if(visited.has(cell))button.classList.add("visited");
     if(cell===current)button.classList.add("current");
-    const neighbors=[
+    const edges=[
       [r>0?cell-SIZE:-1,"wall-top"],
       [c<SIZE-1?cell+1:-1,"wall-right"],
       [r<SIZE-1?cell+SIZE:-1,"wall-bottom"],
       [c>0?cell-1:-1,"wall-left"]
     ];
-    for(const [neighbor,cls] of neighbors){
+    for(const [neighbor,cls] of edges){
       if(neighbor>=0&&hasWall(cell,neighbor))button.classList.add(cls);
     }
     button.addEventListener("click",()=>clickCell(cell));
@@ -474,22 +450,19 @@ function renderBoard(){
     :`Practice puzzle for ${dateLabel(activeDate)}. Practice does not affect your streak.`;
 
   if(isLockedDaily()){
+    finished=true;
+    stopClock();
     coverBoard();
   }else if(!finished){
     uncoverBoard();
   }
 }
 
-function isLockedDaily(){
-  return activeDate===todayKey()&&isTodayCompleted();
-}
-
 function startPuzzle(){
   if(finished||path.length||isLockedDaily())return;
   const start=[...puzzle.checkpoints.entries()].find(([,n])=>n===1)?.[0];
   if(start===undefined)return;
-  path=[start];
-  startClock();
+  path=[start];startClock();
   setMessage("You're in! Connect the checkpoints in order.");
   renderBoard();
 }
@@ -518,11 +491,9 @@ function tryMove(cell){
   if(!adjacent(last,cell)){setMessage("You can only move one square at a time.");return}
   if(hasWall(last,cell)){setMessage("That edge is blocked. Find another route.");return}
   if(path.includes(cell)){setMessage("You cannot visit a square twice.");return}
-
   const nextPath=[...path,cell];
   const count=checkpointProgress(nextPath);
   if(count===-1){setMessage("Connect the numbered checkpoints in order.");return}
-
   path=nextPath;startClock();
   if(path.length===TOTAL){
     if(count===CHECKPOINTS)completePuzzle();
@@ -540,26 +511,22 @@ function undoMove(){
   setMessage(path.length?"Last move undone.":"Start removed. Begin again at checkpoint 1.");
   renderBoard();
 }
-
 function restartPuzzle(){
   if(finished||isLockedDaily())return;
   path=[];undos+=2;
   setMessage("Board reset. The timer is still running.");
   renderBoard();
 }
-
 function calculateStars(seconds,undoCount){
   if(seconds<=puzzle.average&&undoCount<=2)return 3;
   if(seconds<=puzzle.average*1.5&&undoCount<=6)return 2;
   return 1;
 }
-
 function starText(count){return "★".repeat(count)+"☆".repeat(3-count)}
 
 function completePuzzle(){
   if(finished||isLockedDaily())return;
-  finished=true;
-  stopClock();
+  finished=true;stopClock();
   const time=Math.floor(secondsNow());
   const isDaily=activeDate===todayKey();
   const alreadyDone=data.completedDates.includes(activeDate);
@@ -571,43 +538,37 @@ function completePuzzle(){
     data.streak=(gap===1||gap===2)?Math.max(1,data.streak)+1:1;
     data.bestStreak=Math.max(data.bestStreak||0,data.streak);
     data.lastDailyDate=todayKey();
-  }
-
-  if(isDaily&&!alreadyDone){
     data.records[activeDate]={time,undos,stars,completedAt:new Date().toISOString()};
   }
-
-  saveData();
-  refreshStats();
-  renderHistory();
-  renderCalendar();
+  saveData();refreshStats();renderHistory();renderCalendar();
 
   $("resultTitle").textContent=isDaily?"Puzzle complete!":"Practice complete!";
   $("resultDescription").textContent=isDaily
     ?"You completed today's daily challenge! Your result is now saved."
     :"Practice puzzle completed. Your daily stats stay unchanged.";
-
   $("resultStars").innerHTML=[1,2,3].map(n=>
     `<span class="${n<=stars?"earned":""}">${n<=stars?"★":"☆"}</span>`
   ).join("");
   $("resultStars").setAttribute("aria-label",`${stars} out of 3 stars`);
   $("resultTime").textContent=formatTime(time);
   $("resultStats").textContent=`${stars} out of 3 stars · ${undos} undos · Average target: ${formatTime(puzzle.average)}. `+
-    (isDaily?`Streak: ${effectiveStreak()} days. Total days: ${data.completedDates.length}.`:
-      "Practice runs do not change daily stats.");
+    (isDaily?`Streak: ${effectiveStreak()} days. Total days: ${data.completedDates.length}.`:"Practice does not change daily stats.");
   $("resultModal").classList.add("show");
   setMessage(`Puzzle complete! You earned ${stars} star${stars===1?"":"s"}.`);
   renderBoard();
-
-  if(isDaily){
-    coverBoard("Your completion time and stars are saved and protected.");
-  }
+  if(isDaily)coverBoard("Your completion time and stars are saved on this browser.");
 }
 
 function loadPuzzle(dateKey){
   activeDate=dateKey;puzzle=makePuzzle(dateKey);
-  path=[];undos=0;finished=false;resetClock();
-  setMessage(dateKey===todayKey()?"Ready for today's challenge.":"Practice mode. This puzzle won't change your streak.");
+  path=[];undos=0;elapsed=0;startedAt=null;finished=false;stopClock();resetClock();
+
+  if(isLockedDaily()){
+    finished=true;
+    setMessage("Today's puzzle is already complete on this browser.");
+  }else{
+    setMessage(dateKey===todayKey()?"Ready for today's challenge.":"Practice mode. This puzzle won't change your streak.");
+  }
   renderBoard();showPage("game");
 }
 
@@ -616,9 +577,7 @@ function showPage(page){
   document.querySelectorAll(".page").forEach(section=>section.classList.toggle("active",section.id===page));
   if(page==="history"){renderHistory();renderCalendar()}
 }
-
 document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>showPage(btn.dataset.page)));
-
 document.querySelectorAll(".subtab").forEach(btn=>btn.addEventListener("click",()=>{
   document.querySelectorAll(".subtab").forEach(b=>b.classList.toggle("active",b===btn));
   const calendar=btn.dataset.sub==="calendar";
@@ -638,7 +597,7 @@ $("resultHistory").addEventListener("click",()=>{
 document.addEventListener("keydown",event=>{
   if(!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(event.key))return;
   if($("resultModal").classList.contains("show")||!$("game").classList.contains("active"))return;
-  if(isLockedDaily())return;
+  if(isLockedDaily()||finished)return;
   event.preventDefault();
   if(!path.length){startPuzzle();return}
   const last=path[path.length-1];
@@ -663,15 +622,13 @@ function renderHistory(){
     const record=data.records[date];
     const row=document.createElement("div");row.className="history-row";
     const left=document.createElement("div");
-    const label=document.createElement("div");label.className="history-date";
-    label.textContent="✅ "+dateLabel(date);
+    const label=document.createElement("div");label.className="history-date";label.textContent="✅ "+dateLabel(date);
     const detail=document.createElement("div");detail.className="history-detail";
     detail.textContent=record?`Undos: ${record.undos??0}`:"Completed";
     left.append(label,detail);
     const right=document.createElement("div");right.className="history-result";
     if(record){
-      const stars=document.createElement("div");stars.className="history-stars";
-      stars.textContent=starText(record.stars||1);
+      const stars=document.createElement("div");stars.className="history-stars";stars.textContent=starText(record.stars||1);
       const time=document.createElement("div");time.textContent=formatTime(record.time);
       right.append(stars,time);
     }else right.textContent="Done";
@@ -686,25 +643,21 @@ function renderCalendar(){
   const now=new Date();
   $("prevMonth").disabled=year<2020;
   $("nextMonth").disabled=year===now.getFullYear()&&month===now.getMonth();
-
   const grid=$("calendarGrid");grid.innerHTML="";
   ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(name=>{
     const el=document.createElement("div");el.className="weekday";el.textContent=name;grid.appendChild(el);
   });
-
   const firstDay=new Date(year,month,1,12).getDay();
   const days=new Date(year,month+1,0,12).getDate();
   const today=todayKey(),done=new Set(data.completedDates);
   for(let i=0;i<firstDay;i++)grid.appendChild(document.createElement("div"));
-
   for(let day=1;day<=days;day++){
     const key=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
     const button=document.createElement("button");button.className="day";button.type="button";
-    const future=key>today;button.disabled=future;
+    button.disabled=key>today;
     if(key===today)button.classList.add("today");
     if(key===selectedCalendarDate)button.classList.add("selected");
     if(done.has(key))button.classList.add("done");
-
     const num=document.createElement("span");num.className="day-number";num.textContent=day;button.appendChild(num);
     if(done.has(key)){
       const check=document.createElement("span");check.className="day-check";check.textContent="✓";button.appendChild(check);
@@ -721,8 +674,7 @@ function renderCalendar(){
 }
 
 $("prevMonth").addEventListener("click",()=>{
-  currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()-1,1,12);
-  renderCalendar();
+  currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()-1,1,12);renderCalendar();
 });
 $("nextMonth").addEventListener("click",()=>{
   const next=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+1,1,12);
@@ -737,40 +689,18 @@ function switchToTodayIfNeeded(){
     path=[];undos=0;finished=false;resetClock();
     currentMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1,12);
     selectedCalendarDate=today;
-    setMessage(isTodayCompleted()?"Today's puzzle is already complete.":"A new daily puzzle is ready!");
+    setMessage(isTodayCompleted()?"Today's puzzle is already complete on this browser.":"A new daily puzzle is ready!");
     renderBoard();refreshStats();renderHistory();renderCalendar();
   }
 }
-
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="visible")switchToTodayIfNeeded();
 });
-
-window.addEventListener("storage",event=>{
-  if(event.key===STORE_KEY){
-    data=loadData();refreshStats();renderHistory();renderCalendar();renderBoard();
-  }
-});
-
 let observedToday=todayKey();
 setInterval(()=>{
   const today=todayKey();
-  if(today!==observedToday){
-    observedToday=today;
-    switchToTodayIfNeeded();
-  }
+  if(today!==observedToday){observedToday=today;switchToTodayIfNeeded()}
 },10000);
-
-try{
-  const old=JSON.parse(localStorage.getItem("dailyZipChallenge_v3")||"null");
-  if(old&&Array.isArray(old.completedDates)){
-    data.completedDates=[...new Set([...data.completedDates,...old.completedDates])].sort();
-    data.records={...old.records,...data.records};
-    if(!data.lastDailyDate)data.lastDailyDate=old.lastDailyDate||"";
-    if(!data.streak)data.streak=old.streak||0;
-    if(!data.bestStreak)data.bestStreak=old.bestStreak||0;
-  }
-}catch{}
 
 saveData();
 refreshStats();
